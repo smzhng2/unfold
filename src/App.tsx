@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { lazy, Suspense, useState } from "react";
 import type { Mesh } from "./core/types";
 import { parseSTL } from "./core/stl";
 import { buildMesh } from "./core/mesh";
 import { SAMPLES } from "./core/samples";
 import { Landing } from "./ui/Landing";
-import { PhotoFlow } from "./ui/PhotoFlow";
 import { Workspace } from "./ui/Workspace";
+
+// Pulls in @huggingface/transformers (large) — only fetched if the user opens photo mode.
+const PhotoFlow = lazy(() => import("./ui/PhotoFlow").then((m) => ({ default: m.PhotoFlow })));
 
 type View = "landing" | "photo" | "workspace";
 
@@ -55,7 +57,11 @@ export function App() {
   }
 
   if (view === "photo") {
-    return <PhotoFlow onMeshReady={openMesh} onBack={() => setView("landing")} />;
+    return (
+      <Suspense fallback={<div className="landing" />}>
+        <PhotoFlow onMeshReady={openMesh} onBack={() => setView("landing")} />
+      </Suspense>
+    );
   }
 
   return (
