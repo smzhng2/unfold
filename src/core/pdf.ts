@@ -17,21 +17,23 @@ export const PAGE_MM: Record<PaperFormat, { w: number; h: number }> = {
   letter: { w: 215.9, h: 279.4 },
 };
 
+// Extra headroom (beyond MARGIN) reserved at the top of every page for the wordmark.
+const HEADER_H = 8;
 const MARGIN = 12;
 const GAP = 5;
 
 /** Largest printable model size (cm) for this net and paper format. */
 export function maxSizeCm(net: NetResult, format: PaperFormat): number {
   const { w, h } = PAGE_MM[format];
-  const s = maxScaleFor(net, w, h, MARGIN, GAP);
+  const s = maxScaleFor(net, w, h - HEADER_H, MARGIN, GAP);
   // model longest dim = 2 units; scale is mm per unit.
   return Math.floor(((s * 2) / 10) * 10) / 10;
 }
 
 export function estimatePages(net: NetResult, opts: PdfOptions): number {
   const { w, h } = PAGE_MM[opts.format];
-  const scale = Math.min((opts.targetSizeCm * 10) / 2, maxScaleFor(net, w, h, MARGIN, GAP));
-  return packIslands(net, { pageW: w, pageH: h, margin: MARGIN, scale, gap: GAP }).pageCount;
+  const scale = Math.min((opts.targetSizeCm * 10) / 2, maxScaleFor(net, w, h - HEADER_H, MARGIN, GAP));
+  return packIslands(net, { pageW: w, pageH: h - HEADER_H, margin: MARGIN, scale, gap: GAP }).pageCount;
 }
 
 export function exportPDF(net: NetResult, opts: PdfOptions): void {
@@ -44,8 +46,8 @@ export function exportPDF(net: NetResult, opts: PdfOptions): void {
 export function renderPDF(net: NetResult, opts: PdfOptions): jsPDF {
   const { w: pageW, h: pageH } = PAGE_MM[opts.format];
   const requested = (opts.targetSizeCm * 10) / 2;
-  const scale = Math.min(requested, maxScaleFor(net, pageW, pageH, MARGIN, GAP));
-  const layout = packIslands(net, { pageW, pageH, margin: MARGIN, scale, gap: GAP });
+  const scale = Math.min(requested, maxScaleFor(net, pageW, pageH - HEADER_H, MARGIN, GAP));
+  const layout = packIslands(net, { pageW, pageH: pageH - HEADER_H, margin: MARGIN, scale, gap: GAP });
 
   const doc = new jsPDF({ unit: "mm", format: opts.format, orientation: "portrait" });
 
@@ -56,7 +58,7 @@ export function renderPDF(net: NetResult, opts: PdfOptions): jsPDF {
     const island = net.islands[pl.islandIndex];
     const { rotation, bboxMin, bboxMax } = island;
     const c = Math.cos(rotation), s = Math.sin(rotation);
-    const x0 = pl.x, y0 = pl.y, ymax = bboxMax.y;
+    const x0 = pl.x, y0 = pl.y + HEADER_H, ymax = bboxMax.y;
     transforms.set(pl.islandIndex, (p: Vec2) => {
       const rx = p.x * c - p.y * s;
       const ry = p.x * s + p.y * c;
@@ -69,6 +71,8 @@ export function renderPDF(net: NetResult, opts: PdfOptions): jsPDF {
   const ink: [number, number, number] = [40, 38, 34];
   const soft: [number, number, number] = [120, 115, 106];
   const tabFill: [number, number, number] = [243, 240, 232];
+  const accent: [number, number, number] = [194, 65, 12];
+  const rule: [number, number, number] = [230, 225, 213];
 
   const numberSizePt = Math.min(9, Math.max(4.5, (net.tabDepth * scale * 0.55) / 0.3528));
 
@@ -76,6 +80,25 @@ export function renderPDF(net: NetResult, opts: PdfOptions): jsPDF {
     if (page > 0) doc.addPage(opts.format, "portrait");
 
     doc.setFont("helvetica", "normal");
+
+    // Header wordmark: a small triangle glyph + "Unfold", plus a rule separating
+    // it from the cutout below (echoes the app's own topbar).
+    const headerBaseline = MARGIN - 3;
+    doc.setFillColor(...accent);
+    doc.triangle(
+      MARGIN, headerBaseline + 1.3,
+      MARGIN + 1.7, headerBaseline - 3.2,
+      MARGIN + 3.4, headerBaseline + 1.3,
+      "F"
+    );
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(13);
+    doc.setTextColor(...ink);
+    doc.text("Unfold", MARGIN + 6, headerBaseline);
+    doc.setFont("helvetica", "normal");
+    doc.setDrawColor(...rule);
+    doc.setLineWidth(0.25);
+    doc.line(MARGIN, MARGIN + HEADER_H - 3, pageW - MARGIN, MARGIN + HEADER_H - 3);
 
     for (const pl of layout.placements) {
       if (pl.page !== page) continue;

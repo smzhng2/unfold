@@ -31,12 +31,19 @@ export function packIslands(net: NetResult, opts: PackOptions): LayoutResult {
   const printW = pageW - 2 * margin;
   const printH = pageH - 2 * margin;
 
+  const dims = new Map<number, { w: number; h: number }>();
+  for (const island of net.islands) {
+    dims.set(island.index, {
+      w: (island.bboxMax.x - island.bboxMin.x) * scale,
+      h: (island.bboxMax.y - island.bboxMin.y) * scale,
+    });
+  }
+
   const items = net.islands
-    .map((island) => ({
-      index: island.index,
-      w: (island.bboxMax.x - island.bboxMin.x) * scale + gap,
-      h: (island.bboxMax.y - island.bboxMin.y) * scale + gap,
-    }))
+    .map((island) => {
+      const d = dims.get(island.index)!;
+      return { index: island.index, w: d.w + gap, h: d.h + gap };
+    })
     .sort((a, b) => b.h - a.h);
 
   const placements: Placement[] = [];
@@ -72,7 +79,39 @@ export function packIslands(net: NetResult, opts: PackOptions): LayoutResult {
     shelfH = Math.max(shelfH, it.h);
   }
 
-  return { pageW, pageH, margin, pageCount: page + 1, scale, placements };
+  const pageCount = page + 1;
+  centerPlacements(placements, dims, pageCount, margin, printW, printH);
+
+  return { pageW, pageH, margin, pageCount, scale, placements };
+}
+
+/** Distribute each page's leftover space evenly on all sides instead of leaving it in one corner. */
+function centerPlacements(
+  placements: Placement[],
+  dims: Map<number, { w: number; h: number }>,
+  pageCount: number,
+  margin: number,
+  printW: number,
+  printH: number
+): void {
+  for (let p = 0; p < pageCount; p++) {
+    const onPage = placements.filter((pl) => pl.page === p);
+    if (onPage.length === 0) continue;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const pl of onPage) {
+      const d = dims.get(pl.islandIndex)!;
+      minX = Math.min(minX, pl.x);
+      minY = Math.min(minY, pl.y);
+      maxX = Math.max(maxX, pl.x + d.w);
+      maxY = Math.max(maxY, pl.y + d.h);
+    }
+    const offsetX = margin + (printW - (maxX - minX)) / 2 - minX;
+    const offsetY = margin + (printH - (maxY - minY)) / 2 - minY;
+    for (const pl of onPage) {
+      pl.x += offsetX;
+      pl.y += offsetY;
+    }
+  }
 }
 
 /**
