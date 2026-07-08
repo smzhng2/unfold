@@ -1,0 +1,13 @@
+node_modules
+dist
+dist-ssr
+*.local
+*.tsbuildinfo
+
+# editor / OS
+.vscode
+.DS_Store
+Thumbs.db
+
+# scratch output from scripts/verify.ts
+verify-out
