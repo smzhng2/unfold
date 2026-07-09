@@ -123,6 +123,25 @@ button {
   min-height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+/* Floating fold/unfold models behind the hero. */
+.hero-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hero-bg canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.landing > *:not(.hero-bg) {
+  position: relative;
+  z-index: 1;
 }
 
 .topbar {

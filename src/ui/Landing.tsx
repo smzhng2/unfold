@@ -1,5 +1,6 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { SAMPLES } from "../core/samples";
+import { HeroScene } from "../three/heroScene";
 
 interface Props {
   onSTLFile: (file: File) => void;
@@ -10,7 +11,18 @@ interface Props {
 
 export function Landing({ onSTLFile, onPhotoMode, onSample, error }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const bgRef = useRef<HTMLDivElement>(null);
   const [dragOver, setDragOver] = useState(false);
+
+  // Floating fold/unfold models behind the hero — desktop only, and skipped
+  // entirely when the user prefers reduced motion.
+  useEffect(() => {
+    const wide = window.matchMedia("(min-width: 900px)").matches;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!wide || reduced || !bgRef.current) return;
+    const scene = new HeroScene(bgRef.current);
+    return () => scene.dispose();
+  }, []);
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -21,6 +33,7 @@ export function Landing({ onSTLFile, onPhotoMode, onSample, error }: Props) {
 
   return (
     <div className="landing">
+      <div ref={bgRef} className="hero-bg" aria-hidden="true" />
       <div className="topbar">
         <span className="wordmark">
           <span className="mark">▲</span> Unfold
