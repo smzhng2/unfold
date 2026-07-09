@@ -24,9 +24,9 @@ npx tsx scripts/verify.ts [outDir]   # headless pipeline check, see below
 
 `src/App.tsx` switches between three views: `Landing` → `Workspace` (once a
 mesh is loaded) or `PhotoFlow` (photo → mesh, then also lands in
-`Workspace`). Meshes come from three sources: an uploaded `.stl` file, a
-procedural sample (`src/core/samples.ts`), or a photo-derived relief
-(`src/core/depth.ts`). All three converge on the same `Mesh` type and the
+`Workspace`). Meshes come from three sources: an uploaded model file
+(`.stl` or `.obj`), a procedural sample (`src/core/samples.ts`), or a
+photo-derived relief (`src/core/depth.ts`). All three converge on the same `Mesh` type and the
 same `Workspace` component.
 
 ## Core geometry pipeline (`src/core/`)
@@ -37,6 +37,9 @@ for the full type map — `Mesh`, `NetFace`, `Island`, `NetResult`,
 `LayoutResult`, etc.).
 
 1. **`stl.ts`** — parses binary and ASCII STL into a raw triangle soup.
+   **`obj.ts`** — parses Wavefront OBJ into the same soup (fan-triangulates
+   quads/n-gons, handles `v/vt/vn` corner syntax and negative indices;
+   materials and UVs are currently ignored — geometry only).
 2. **`mesh.ts`** — welds the soup into an indexed mesh, drops degenerate
    triangles, normalizes scale (longest bbox axis = 2 units), repairs
    triangle winding per connected component (BFS across manifold edges +

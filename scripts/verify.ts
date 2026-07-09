@@ -8,6 +8,7 @@ import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { SAMPLES } from "../src/core/samples";
 import { parseSTL } from "../src/core/stl";
+import { parseOBJ } from "../src/core/obj";
 import { buildMesh, computeStats, buildTopology } from "../src/core/mesh";
 import { simplifyMesh } from "../src/core/simplify";
 import { unfoldMesh, trianglesOverlap } from "../src/core/unfold";
@@ -145,7 +146,32 @@ async function main() {
     console.log(`  islands=${net.islands.length} folds=${net.folds.length}`);
   }
 
-  // 3) Simplification: dense sphere -> 200 faces -> unfold.
+  // 3) Synthetic OBJ round-trip (quad cube — exercises fan triangulation,
+  //    v/vt/vn corner syntax, and negative indices).
+  {
+    const objText = [
+      "# unit cube, quad faces",
+      "v -1 -1 -1", "v 1 -1 -1", "v 1 1 -1", "v -1 1 -1",
+      "v -1 -1 1", "v 1 -1 1", "v 1 1 1", "v -1 1 1",
+      "vt 0 0", "vn 0 0 1",
+      "f 1/1/1 2/1/1 3/1/1 4/1/1",
+      "f 5//1 8//1 7//1 6//1",
+      "f 1/1 5/1 6/1 2/1",
+      "f 2 6 7 3",
+      "f 3 7 8 4",
+      "f -8 -4 -1 -5", // negative indices: 1 5 8 4
+    ].join("\n");
+    const soup = parseOBJ(objText);
+    check(soup.triangleCount === 12, `OBJ: 6 quads -> 12 triangles (got ${soup.triangleCount})`);
+    const mesh = buildMesh(soup, "obj cube", "stl");
+    const stats = computeStats(mesh);
+    console.log(`\n■ OBJ quad cube: ${stats.faces} faces, watertight=${stats.watertight}`);
+    check(stats.watertight, "OBJ: cube watertight after weld");
+    const net = unfoldMesh(mesh);
+    verifyNet(mesh, net, "obj cube");
+  }
+
+  // 4) Simplification: dense sphere -> 200 faces -> unfold.
   {
     const THREE = await import("three");
     const geo = new THREE.SphereGeometry(1, 48, 32).toNonIndexed();

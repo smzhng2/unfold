@@ -1,6 +1,7 @@
 import React, { lazy, Suspense, useState } from "react";
 import type { Mesh } from "./core/types";
 import { parseSTL } from "./core/stl";
+import { parseOBJ } from "./core/obj";
 import { buildMesh } from "./core/mesh";
 import { SAMPLES } from "./core/samples";
 import { Landing } from "./ui/Landing";
@@ -22,19 +23,22 @@ export function App() {
     setView("workspace");
   };
 
-  const handleSTLFile = async (file: File) => {
+  const handleModelFile = async (file: File) => {
     setError(null);
-    if (!/\.stl$/i.test(file.name)) {
-      setError(`"${file.name}" isn't an .stl file. Unfold currently reads STL only — most 3D tools can export it.`);
+    const isSTL = /\.stl$/i.test(file.name);
+    const isOBJ = /\.obj$/i.test(file.name);
+    if (!isSTL && !isOBJ) {
+      setError(`"${file.name}" isn't a supported model file. Unfold reads .stl and .obj — most 3D tools can export one of them.`);
       return;
     }
     try {
-      const buffer = await file.arrayBuffer();
-      const soup = parseSTL(buffer);
-      const m = buildMesh(soup, file.name.replace(/\.stl$/i, ""), "stl");
+      const soup = isSTL
+        ? parseSTL(await file.arrayBuffer())
+        : parseOBJ(await file.text());
+      const m = buildMesh(soup, file.name.replace(/\.(stl|obj)$/i, ""), "stl");
       openMesh(m);
     } catch (e) {
-      setError(`Couldn't read that STL: ${(e as Error).message}`);
+      setError(`Couldn't read that model: ${(e as Error).message}`);
     }
   };
 
@@ -66,7 +70,7 @@ export function App() {
 
   return (
     <Landing
-      onSTLFile={handleSTLFile}
+      onSTLFile={handleModelFile}
       onPhotoMode={() => setView("photo")}
       onSample={handleSample}
       error={error}

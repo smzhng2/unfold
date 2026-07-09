@@ -71,13 +71,13 @@ export function Landing({ onSTLFile, onPhotoMode, onSample, error }: Props) {
           <span className="glyph">⬡</span>
           <h3>From a 3D file</h3>
           <p>
-            Drop an <strong>.stl</strong> file here (or click to browse). Big meshes get simplified
-            down to a foldable face count first.
+            Drop an <strong>.stl</strong> or <strong>.obj</strong> file here (or click to browse).
+            Big meshes get simplified down to a foldable face count first.
           </p>
           <input
             ref={fileRef}
             type="file"
-            accept=".stl"
+            accept=".stl,.obj"
             hidden
             onChange={(e) => {
               const f = e.target.files?.[0];
@@ -121,8 +121,8 @@ export function Landing({ onSTLFile, onPhotoMode, onSample, error }: Props) {
             like <strong>Polycam</strong>, <strong>Luma</strong>, and <strong>RealityScan</strong>.
           </p>
           <p>
-            All of them export <strong>.stl</strong> — bring that file back here and Unfold will
-            take it from there: simplify, unfold, print, fold, glue.
+            All of them export <strong>.stl</strong> or <strong>.obj</strong> — bring that file
+            back here and Unfold will take it from there: simplify, unfold, print, fold, glue.
           </p>
         </div>
       </div>
