@@ -571,6 +571,123 @@ select {
   flex-shrink: 0;
 }
 
+/* ---------- community ---------- */
+
+.nav-link {
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 13.5px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.nav-link:hover {
+  color: var(--ink);
+  background: var(--line);
+}
+
+.community-page {
+  max-width: 1020px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 32px 40px;
+}
+
+.community-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.creation-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  text-align: left;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s;
+  font: inherit;
+  color: inherit;
+}
+
+.creation-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 1px 2px rgba(60, 50, 30, 0.05), 0 10px 34px rgba(194, 65, 12, 0.12);
+  transform: translateY(-2px);
+}
+
+.creation-thumb {
+  background: linear-gradient(160deg, #f1eee6, #e9e4d8);
+  aspect-ratio: 4 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--line);
+}
+
+.creation-thumb img {
+  width: 78%;
+  height: 92%;
+  object-fit: contain;
+}
+
+.thumb-placeholder {
+  font-size: 42px;
+  color: var(--faint);
+}
+
+.creation-body {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.creation-body h3 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 20px;
+}
+
+.creation-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.creation-blurb {
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.creation-stats {
+  display: flex;
+  gap: 16px;
+  color: var(--faint);
+  font-size: 11.5px;
+  margin-top: 2px;
+}
+
 /* ---------- photo flow ---------- */
 
 .photo-page {

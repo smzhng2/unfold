@@ -116,7 +116,17 @@ segment buffers for cut/mountain/valley overlays.
 
 ## UI (`src/ui/`)
 
-- `Landing.tsx` — drop zone for STL, photo-mode entry, sample picker.
+- `Landing.tsx` — drop zone for STL/OBJ, photo-mode entry, sample picker,
+  Community link in the topbar.
+- `Community.tsx` — "Community creations" gallery. Sharing is NOT live:
+  the accounts/creations are placeholders defined in
+  `src/core/community.ts` (fictional authors, procedurally built models —
+  including two gallery-only meshes, a star prism and a hexagonal
+  crystal). Every card opens as a real mesh in `Workspace`. Thumbnails are
+  rendered at mount via a shared offscreen WebGL renderer
+  (`renderThumbnail`), one frame per model, cached per session. The UI
+  banner explicitly says sharing/uploads are coming — keep that honesty
+  if you touch this.
 - `Workspace.tsx` — the main app: viewer + right-hand panel with model
   stats, simplify slider, unfold button, fold-animation transport, and PDF
   export controls (paper size, finished-size slider clamped to

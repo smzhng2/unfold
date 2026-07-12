@@ -5,11 +5,12 @@ import { HeroScene } from "../three/heroScene";
 interface Props {
   onSTLFile: (file: File) => void;
   onPhotoMode: () => void;
+  onCommunity: () => void;
   onSample: (id: string) => void;
   error: string | null;
 }
 
-export function Landing({ onSTLFile, onPhotoMode, onSample, error }: Props) {
+export function Landing({ onSTLFile, onPhotoMode, onCommunity, onSample, error }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -39,6 +40,10 @@ export function Landing({ onSTLFile, onPhotoMode, onSample, error }: Props) {
           <span className="mark">▲</span> Unfold
         </span>
         <span className="tagline">3D models → printable papercraft</span>
+        <span className="spacer" />
+        <button className="nav-link" onClick={onCommunity}>
+          Community
+        </button>
       </div>
 
       <section className="hero">

@@ -5,12 +5,13 @@ import { parseOBJ } from "./core/obj";
 import { buildMesh } from "./core/mesh";
 import { SAMPLES } from "./core/samples";
 import { Landing } from "./ui/Landing";
+import { Community } from "./ui/Community";
 import { Workspace } from "./ui/Workspace";
 
 // Pulls in @huggingface/transformers (large) — only fetched if the user opens photo mode.
 const PhotoFlow = lazy(() => import("./ui/PhotoFlow").then((m) => ({ default: m.PhotoFlow })));
 
-type View = "landing" | "photo" | "workspace";
+type View = "landing" | "photo" | "community" | "workspace";
 
 export function App() {
   const [view, setView] = useState<View>("landing");
@@ -60,6 +61,10 @@ export function App() {
     );
   }
 
+  if (view === "community") {
+    return <Community onOpen={openMesh} onBack={() => setView("landing")} />;
+  }
+
   if (view === "photo") {
     return (
       <Suspense fallback={<div className="landing" />}>
@@ -72,6 +77,7 @@ export function App() {
     <Landing
       onSTLFile={handleModelFile}
       onPhotoMode={() => setView("photo")}
+      onCommunity={() => setView("community")}
       onSample={handleSample}
       error={error}
     />
